@@ -3,6 +3,7 @@
 import { signIn } from 'next-auth/react';
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
+import Link from "next/link";
 
 export default function LoginPage() {
   const [email, setEmail] = useState('');
@@ -61,7 +62,7 @@ export default function LoginPage() {
               <input type="checkbox" className="mr-2" />
               Remember me
             </label>
-            <a href="#" className="text-blue-500 hover:underline">Forgot password?</a>
+            <Link href="/forgot-password" className="text-blue-500 hover:underline">Forgot password?</Link>
           </div>
           <button
             type="submit"
@@ -71,7 +72,7 @@ export default function LoginPage() {
           </button>
         </form>
         <p className="mt-4 text-center text-sm text-gray-600">
-          Don’t have an account? <a href="/signup" className="text-blue-500 hover:underline">Sign up</a>
+          Don’t have an account? <Link href="/signup" className="text-blue-500 hover:underline">Sign up</Link>
         </p>
       </div>
     </div>
