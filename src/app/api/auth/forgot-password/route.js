@@ -33,7 +33,8 @@ export async function POST(req) {
       },
     });
 
-    const resetLink = `http://localhost:3000/reset-password?token=${token}`;
+    const resetLink = `http://localhost:3000/reset-password?token=${token}&email=${encodeURIComponent(email)}`;
+
 
     await transporter.sendMail({
       to: user.email,
