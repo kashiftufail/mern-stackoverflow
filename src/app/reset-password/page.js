@@ -1,9 +1,11 @@
 'use client'
-import { useSearchParams } from 'next/navigation'
+import { useSearchParams, useRouter } from 'next/navigation'
 import { useState } from 'react'
 
 export default function ResetPasswordPage() {
   const params = useSearchParams()
+  const router = useRouter()
+
   const token = params.get('token')
   const email = params.get('email')
 
@@ -15,23 +17,39 @@ export default function ResetPasswordPage() {
   const handleSubmit = async (e) => {
     e.preventDefault()
 
-    // Front-end validation
     if (password !== confirmPassword) {
       setError('Passwords do not match')
+      setMessage(null)
       return
     }
 
-    setError(null)
+    try {
+      const res = await fetch('/api/auth/reset-password', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ token, email, password }),
+      })
 
-    const res = await fetch('/api/auth/reset-password', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ token, email, password }),
-    })
+      const data = await res.json()
 
-    const data = await res.json()
-    setMessage(data.message || null)
-    setError(data.error || null)
+      if (res.ok) {
+        setMessage(data.message)
+        setError(null)
+        setPassword('')
+        setConfirmPassword('')
+
+        // Redirect to login after short delay
+        setTimeout(() => {
+          router.push('/login')
+        }, 2000)
+      } else {
+        setError(data.error || 'Something went wrong')
+        setMessage(null)
+      }
+    } catch (err) {
+      setError('Network error. Please try again.')
+      setMessage(null)
+    }
   }
 
   return (
