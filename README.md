@@ -64,7 +64,8 @@ git clone https://github.com/yourusername/stacklite.git
    MONGODB_URI=mongodb://root:root@localhost:27017/stacklite?authSource=admin
    NEXTAUTH_SECRET=your-secret
    NEXTAUTH_URL=http://localhost:3000
-
-4. Start the App
+4. seeding  
+   node src/scripts/seed-tags.js
+5. Start the App
    npm run dev
 
