@@ -4,12 +4,15 @@ import { signIn } from 'next-auth/react';
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from "next/link";
+import { useDispatch } from 'react-redux';
+import { setUser } from '@/redux/slices/authSlice';
 
 export default function LoginPage() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [errorMsg, setErrorMsg] = useState('');
   const router = useRouter();
+  const dispatch = useDispatch();
 
   const handleLogin = async (e) => {
     e.preventDefault();
@@ -21,7 +24,13 @@ export default function LoginPage() {
     });
 
     if (res.ok) {
-      router.push('/profile'); // Redirect to profile page after login
+      // Fetch session user info
+      const sessionRes = await fetch('/api/auth/session');
+      const session = await sessionRes.json();
+
+      // Store user in Redux
+      dispatch(setUser(session?.user));
+      router.push('/profile');
     } else {
       setErrorMsg('Invalid email or password');
     }
