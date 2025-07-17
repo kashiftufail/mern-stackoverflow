@@ -12,6 +12,11 @@ const userSchema = new mongoose.Schema({
   },
   resetToken: { type: String },
   resetTokenExpiry: { type: Date },
+  fullName: String,
+  avatar: String, 
+  city: String,
+  state: String,
+  zip: String,
 }, { timestamps: true });
 
 export default mongoose.models.User || mongoose.model("User", userSchema);
