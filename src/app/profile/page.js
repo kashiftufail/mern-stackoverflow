@@ -37,7 +37,7 @@ export default function ProfilePage() {
   const userData = {
     name: session.user.name || "John Doe",
     email: session.user.email || "noemail@example.com",
-    avatar: profile?.avatar || "/kashif.jfif",
+    avatar: profile?.avatar || "/profile.jfif",
     city: profile?.city || "Unknown City",
     state: profile?.state || "Unknown State",
     zip: profile?.zip || "00000",

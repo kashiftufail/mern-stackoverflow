@@ -22,7 +22,7 @@ export async function GET() {
   const userProfile = {
     name: user.fullName || session.user.name || "John Doe",
     email: user.email,
-    avatar: user.avatar || "/kashif.jfif",
+    avatar: user.avatar || "/profile.jfif",
     city: user.city || "Unknown City",
     state: user.state || "Unknown State",
     zip: user.zip || "00000",

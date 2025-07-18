@@ -2,6 +2,7 @@ import Link from 'next/link';
 import { connectDB } from '@/lib/mongoose';
 import Question from '@/models/Question';
 import Tag from '@/models/Tag';
+import moment from 'moment';
 
 export const dynamic = 'force-dynamic';
 
@@ -9,7 +10,7 @@ export default async function QuestionsPage() {
   await connectDB();
   const questions = await Question.find()
     .populate('tags')
-    .populate('author', 'name email') // assuming User model has these fields
+    .populate('author', 'name email avatar') // assuming User model has these fields
     .sort({ createdAt: -1 });
 
   return (
@@ -34,6 +35,21 @@ export default async function QuestionsPage() {
               </span>
             ))}
           </div>
+          <div className="flex items-center gap-2 mt-4 text-sm text-gray-500">
+            <img
+                src={q.author?.avatar || '/profile.jfif'}
+                alt={q.author?.name || 'User'}
+                className="w-6 h-6 rounded-full object-cover"
+            />
+            <span>
+                Posted by{' '}
+                <span className="font-medium text-gray-700">
+                {q.author?.name || q.author?.email}
+                </span>{' '}
+                • {moment(q.createdAt).fromNow()}
+            </span>
+           </div>
+
         </div>
       ))}
     </main>
