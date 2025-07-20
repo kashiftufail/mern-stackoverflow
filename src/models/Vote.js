@@ -9,7 +9,12 @@ const voteSchema = new mongoose.Schema({
   question: {
     type: mongoose.Schema.Types.ObjectId,
     ref: 'Question',
-    required: true,
+    default: null,
+  },
+  answer: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'Answer',
+    default: null,
   },
   value: {
     type: Number,
@@ -20,6 +25,16 @@ const voteSchema = new mongoose.Schema({
   timestamps: true,
 });
 
-voteSchema.index({ user: 1, question: 1 }, { unique: true });
+// A user can vote only once per question
+voteSchema.index(
+  { user: 1, question: 1 },
+  { unique: true, partialFilterExpression: { question: { $exists: true } } }
+);
+
+// A user can vote only once per answer
+voteSchema.index(
+  { user: 1, answer: 1 },
+  { unique: true, partialFilterExpression: { answer: { $exists: true } } }
+);
 
 export default mongoose.models.Vote || mongoose.model('Vote', voteSchema);
