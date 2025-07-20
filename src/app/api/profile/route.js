@@ -1,6 +1,6 @@
 // src/app/api/profile/route.js
 import { getServerSession } from 'next-auth';
-import { authOptions } from '@/app/api/auth/[...nextauth]/route';
+import { authOptions } from '@/lib/auth';
 import { connectDB } from '@/lib/mongoose';
 import User from '@/models/User';
 import { writeFile } from 'fs/promises';
@@ -9,6 +9,7 @@ import { v4 as uuidv4 } from 'uuid';
 
 export async function GET() {
   const session = await getServerSession(authOptions);
+  console.log('Session:', session);
   if (!session) return Response.json({ error: 'Unauthorized' }, { status: 401 });
 
   await connectDB();
