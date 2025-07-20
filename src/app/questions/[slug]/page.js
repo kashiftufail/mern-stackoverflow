@@ -28,7 +28,7 @@ export default async function QuestionDetail({ params }) {
   return (
     <main className="max-w-3xl mx-auto py-8">
       <div className="flex items-start gap-6">
-        <VoteButtons questionId={question.slug} initialVotes={votes} /> {/* ✅ safe */}
+        <VoteButtons questionSlug={slug} initialVotes={votes} /> {/* ✅ safe */}
 
         <div className="flex-1">
           <h1 className="text-3xl font-bold mb-4">{question.title}</h1>
