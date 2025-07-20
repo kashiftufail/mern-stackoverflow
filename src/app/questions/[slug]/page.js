@@ -1,6 +1,8 @@
 import { connectDB } from '@/lib/mongoose';
 import Question from '@/models/Question';
+import Answer from '@/models/Answer';
 import Vote from '@/models/Vote';
+import Tag from '@/models/Tag';
 import moment from 'moment';
 import VoteButtons from '@/components/VoteButtons';
 
@@ -25,10 +27,31 @@ export default async function QuestionDetail({ params }) {
 
   const voteScore = votes.reduce((sum, v) => sum + v.value, 0);
 
+  // ✅ Fetch answers with author info
+  const answers = await Answer.find({ question: question._id })
+    .populate('author', 'fullName email avatar')
+    .lean();
+
+  // ✅ Fetch all answer votes
+  const answerVotesMap = {};
+  const answerIds = answers.map(ans => ans._id);
+  const allAnswerVotes = await Vote.find({ answer: { $in: answerIds } }).lean();
+
+  allAnswerVotes.forEach(vote => {
+    const aid = vote.answer.toString();
+    if (!answerVotesMap[aid]) answerVotesMap[aid] = [];
+    answerVotesMap[aid].push({ value: vote.value });
+  });
+
   return (
     <main className="max-w-3xl mx-auto py-8">
       <div className="flex items-start gap-6">
-        <VoteButtons questionSlug={slug} initialVotes={votes} /> 
+        <VoteButtons
+          type="question"
+          slugOrId={question.slug}
+          initialVotes={votes} // should be an array of { value: 1 | -1 }
+        />
+
 
         <div className="flex-1">
           <h1 className="text-3xl font-bold mb-4">{question.title}</h1>
@@ -55,6 +78,39 @@ export default async function QuestionDetail({ params }) {
             </div>
             <span>{moment(question.createdAt).fromNow()}</span>
           </div>
+
+          <div className="mt-12 border-t pt-6">
+            <h2 className="text-2xl font-semibold mb-6">{answers.length} Answers</h2>
+            {answers.map(answer => (
+              <div key={answer._id} className="flex items-start gap-4 mb-8">
+                <VoteButtons
+                  type="answer"
+                  slugOrId={answer._id}
+                  initialVotes={answerVotesMap[answer._id.toString()] || []}
+                />
+                <div className="flex-1">
+                  <p className="text-gray-800 whitespace-pre-line mb-2">{answer.body}</p>
+                  <div className="flex items-center justify-between text-sm text-gray-500">
+                    <div className="flex items-center gap-2">
+                      {answer.author?.avatar ? (
+                        <img src={answer.author.avatar} alt="avatar" className="w-6 h-6 rounded-full" />
+                      ) : (
+                        <div className="w-6 h-6 rounded-full bg-gray-300 flex items-center justify-center text-white text-sm font-bold">
+                          {answer.author?.fullName?.[0] || answer.author?.email?.[0] || "U"}
+                        </div>
+                      )}
+                      <span>{answer.author?.fullName || answer.author?.email}</span>
+                    </div>
+                    <span>{moment(answer.createdAt).fromNow()}</span>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+
+
+
+
         </div>
       </div>
     </main>
