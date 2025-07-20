@@ -2,13 +2,14 @@
 
 import { useState } from 'react';
 
-export default function VoteButtons({ questionId, initialVotes }) {
+export default function VoteButtons({ questionSlug, initialVotes }) {
   const [votes, setVotes] = useState(initialVotes);
   const voteScore = votes.reduce((sum, v) => sum + v.value, 0);
 
   const handleVote = async (value) => {
     try {
-      const res = await fetch(`/api/questions/${questionId}/vote`, {
+      console.log('Submitting vote:', { questionSlug, value });
+      const res = await fetch(`/api/questions/${questionSlug}/vote`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ value }),

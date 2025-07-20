@@ -1,14 +1,14 @@
 import { connectDB } from '@/lib/mongoose';
 import Vote from '@/models/Vote';
 import { getServerSession } from 'next-auth';
-// import { authOptions } from '../auth/[...nextauth]/route';
-import { authOptions } from "@/lib/auth";
+import { authOptions } from '../auth/[...nextauth]/route';
+// import { authOptions } from "@/lib/auth";
 
 export async function POST(req) {
   await connectDB();
   const session = await getServerSession(authOptions);
   if (!session) return new Response('Unauthorized', { status: 401 });
-
+  
   const { questionId, voteValue } = await req.json();
   const userId = session.user.id;
 
