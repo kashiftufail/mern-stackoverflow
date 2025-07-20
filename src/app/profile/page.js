@@ -35,7 +35,7 @@ export default function ProfilePage() {
 
   // Merge session + profile + dummy fallback
   const userData = {
-    name: session.user.name || "John Doe",
+    name:  profile?.name || session.user.name || "John Doe",
     email: session.user.email || "noemail@example.com",
     avatar: profile?.avatar || "/profile.jfif",
     city: profile?.city || "Unknown City",
