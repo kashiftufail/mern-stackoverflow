@@ -10,7 +10,7 @@ export default async function QuestionsPage() {
   await connectDB();
   const questions = await Question.find()
     .populate('tags')
-    .populate('author', 'name email avatar') // assuming User model has these fields
+    .populate('author', 'fullName email avatar') 
     .sort({ createdAt: -1 });
 
   return (
@@ -44,7 +44,7 @@ export default async function QuestionsPage() {
             <span>
                 Posted by{' '}
                 <span className="font-medium text-gray-700">
-                {q.author?.name || q.author?.email}
+                {q.author?.fullName  || q.author?.email}
                 </span>{' '}
                 • {moment(q.createdAt).fromNow()}
             </span>

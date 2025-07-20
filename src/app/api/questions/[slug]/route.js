@@ -11,7 +11,7 @@ export async function GET(req, context) {
 
   const question = await Question.findOne({ slug })
     .populate('tags')
-    .populate('author', 'name email avatar')
+    .populate('author', 'fullName email avatar')
     .lean();
 
   if (!question) {
