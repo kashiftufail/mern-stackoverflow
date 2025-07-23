@@ -5,6 +5,7 @@ import Vote from '@/models/Vote';
 import Tag from '@/models/Tag';
 import moment from 'moment';
 import VoteButtons from '@/components/VoteButtons';
+import AnswerForm from '@/components/AnswerForm';
 
 export const dynamic = 'force-dynamic';
 
@@ -17,6 +18,7 @@ export default async function QuestionDetail({ params }) {
     .populate('tags')
     .populate('author', 'fullName email avatar')
     .lean();
+  
 
   if (!question) {
     return <p className="text-center text-gray-500">Question not found</p>;
@@ -85,7 +87,7 @@ export default async function QuestionDetail({ params }) {
               <div key={answer._id} className="flex items-start gap-4 mb-8">
                 <VoteButtons
                   type="answer"
-                  slugOrId={answer._id}
+                  slugOrId={answer._id.toString()}
                   initialVotes={answerVotesMap[answer._id.toString()] || []}
                 />
                 <div className="flex-1">
@@ -107,7 +109,7 @@ export default async function QuestionDetail({ params }) {
               </div>
             ))}
           </div>
-
+          <AnswerForm questionId={question._id.toString()} />
 
 
 
