@@ -1,10 +1,12 @@
 'use client';
 
 import { useState } from 'react';
+import { useRouter } from 'next/navigation';
 
 export default function AnswerForm({ questionId }) {
   const [body, setBody] = useState('');
   const [loading, setLoading] = useState(false);
+  const router = useRouter();
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -20,7 +22,7 @@ export default function AnswerForm({ questionId }) {
 
     if (res.ok) {
       setBody('');
-      window.location.reload(); // reload to show the new answer (temporary)
+      router.refresh();
     } else {
       const data = await res.json();
       alert(data.error || 'Failed to submit answer');
