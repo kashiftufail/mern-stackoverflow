@@ -18,6 +18,7 @@ export default async function QuestionDetail({ params }) {
     .populate('tags')
     .populate('author', 'fullName email avatar')
     .lean();
+  
 
   if (!question) {
     return <p className="text-center text-gray-500">Question not found</p>;
