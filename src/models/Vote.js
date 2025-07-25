@@ -33,16 +33,16 @@ voteSchema.index(
   { user: 1, question: 1 },
   {
     unique: true,
-    partialFilterExpression: { question: { $exists: true } },
+    partialFilterExpression: { question: { $type: 'objectId' } }
   }
 );
 
-
+// Prevent duplicate votes on the same answer by same user
 voteSchema.index(
   { user: 1, answer: 1 },
   {
     unique: true,
-    partialFilterExpression: { answer: { $exists: true } },
+    partialFilterExpression: { answer: { $type: 'objectId' } }
   }
 );
 
