@@ -3,9 +3,12 @@ import Question from '@/models/Question';
 import Answer from '@/models/Answer';
 import Vote from '@/models/Vote';
 import Tag from '@/models/Tag';
+import User from '@/models/User';
 import moment from 'moment';
 import VoteButtons from '@/components/VoteButtons';
 import AnswerForm from '@/components/AnswerForm';
+import { getServerSession } from 'next-auth';
+import { authOptions } from '@/lib/auth';
 
 export const dynamic = 'force-dynamic';
 
@@ -14,6 +17,18 @@ export default async function QuestionDetail({ params }) {
 
   await connectDB();
 
+  const session = await getServerSession(authOptions);
+  const sessionUser = session?.user || null; // MongoDB ObjectId string
+
+  if (!sessionUser) {
+      return Response.json({ error: 'Unauthorized' }, { status: 401 });
+    }
+  
+  const user = await User.findOne({ email: sessionUser.email });
+  if (!user) {
+    return Response.json({ error: 'User not found' }, { status: 404 });
+  }
+  
   const question = await Question.findOne({ slug })
     .populate('tags')
     .populate('author', 'fullName email avatar')
@@ -24,7 +39,8 @@ export default async function QuestionDetail({ params }) {
     return <p className="text-center text-gray-500">Question not found</p>;
   }
 
-  const rawVotes = await Vote.find({ question: question._id }).lean();
+  const rawVotes = await Vote.find({ question: question._id }).populate('user').lean();
+  //console.log('Raw Votes:', rawVotes);
   const votes = JSON.parse(JSON.stringify(rawVotes)); 
 
   const voteScore = votes.reduce((sum, v) => sum + v.value, 0);
@@ -37,12 +53,15 @@ export default async function QuestionDetail({ params }) {
   // ✅ Fetch all answer votes
   const answerVotesMap = {};
   const answerIds = answers.map(ans => ans._id);
-  const allAnswerVotes = await Vote.find({ answer: { $in: answerIds } }).lean();
-
+  const allAnswerVotes = await Vote.find({ answer: { $in: answerIds } }).populate('user').lean();
+   //console.log('Raw Votes answers:', allAnswerVotes);
   allAnswerVotes.forEach(vote => {
-    const aid = vote.answer.toString();
-    if (!answerVotesMap[aid]) answerVotesMap[aid] = [];
-    answerVotesMap[aid].push({ value: vote.value });
+  const aid = vote.answer.toString();
+  if (!answerVotesMap[aid]) answerVotesMap[aid] = [];
+    answerVotesMap[aid].push({
+      value: vote.value,
+      user: vote.user?._id?.toString?.() || vote.user?.toString?.()
+    });
   });
 
   return (
@@ -51,7 +70,8 @@ export default async function QuestionDetail({ params }) {
         <VoteButtons
           type="question"
           slugOrId={question.slug}
-          initialVotes={votes} // should be an array of { value: 1 | -1 }
+          initialVotes={votes} 
+          currentUserId={user._id.toString()} 
         />
 
 
@@ -89,6 +109,7 @@ export default async function QuestionDetail({ params }) {
                   type="answer"
                   slugOrId={answer._id.toString()}
                   initialVotes={answerVotesMap[answer._id.toString()] || []}
+                  currentUserId={user._id.toString()}
                 />
                 <div className="flex-1">
                   <p className="text-gray-800 whitespace-pre-line mb-2">{answer.body}</p>
