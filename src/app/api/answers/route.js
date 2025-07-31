@@ -53,7 +53,7 @@ export async function POST(req) {
       await agenda.now('send answer notification', {
         questionOwnerEmail: question.author.email,
         questionTitle: question.title,
-        answerContent: answer.body,
+        answerBody: answer.body,
       });
     }
 
