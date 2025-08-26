@@ -9,6 +9,9 @@ import VoteButtons from '@/components/VoteButtons';
 import AnswerForm from '@/components/AnswerForm';
 import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth';
+import Comment from '@/models/Comment';
+import CommentsSection from '@/components/CommentsSection';
+
 
 export const dynamic = 'force-dynamic';
 
@@ -49,6 +52,11 @@ export default async function QuestionDetail({ params }) {
   const answers = await Answer.find({ question: question._id })
     .populate('author', 'fullName email avatar')
     .lean();
+
+  const comments = await Comment.find({ question: question._id })
+    .populate('author', 'fullName email avatar')
+    .sort({ createdAt: -1 })
+    .lean();  
 
   // ✅ Fetch all answer votes
   const answerVotesMap = {};
@@ -100,6 +108,18 @@ export default async function QuestionDetail({ params }) {
             </div>
             <span>{moment(question.createdAt).fromNow()}</span>
           </div>
+
+          <CommentsSection
+            initialComments={comments}
+            questionId={question._id.toString()}
+            currentUser={{
+              _id: user._id.toString(),
+              fullName: user.fullName || null,
+              email: user.email,
+              avatar: user.avatar || null,
+            }}
+          />
+
 
           <div className="mt-12 border-t pt-6">
             <h2 className="text-2xl font-semibold mb-6">{answers.length} Answers</h2>
