@@ -12,9 +12,15 @@ export async function POST(req) {
     return Response.json({ error: 'Unauthorized' }, { status: 401 });
   }
 
-  const { questionId, body } = await req.json();
+//   const { questionId, body } = await req.json();
 
-  if (!body || !body.trim() || !questionId) {
+//   if (!body || !body.trim() || !questionId) {
+//     return Response.json({ error: 'Invalid payload' }, { status: 400 });
+//   }
+
+  const { questionId, answerId, body } = await req.json();
+
+  if (!body || !body.trim() || (!questionId && !answerId)) {
     return Response.json({ error: 'Invalid payload' }, { status: 400 });
   }
 
@@ -26,7 +32,8 @@ export async function POST(req) {
   const comment = await Comment.create({
     body: body.trim(),
     author: user._id,
-    question: questionId,
+    question: questionId || null,
+    answer: answerId || null,
   });
 
   await comment.populate('author', 'fullName email avatar');
