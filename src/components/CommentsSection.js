@@ -3,7 +3,9 @@
 import { useState } from 'react';
 import moment from 'moment';
 
-export default function CommentsSection({ initialComments, questionId, currentUser }) {
+//export default function CommentsSection({ initialComments, questionId, currentUser }) {
+export default function CommentsSection({ initialComments, questionId, answerId, currentUser }) {
+
   const [commentList, setCommentList] = useState(initialComments || []);
   const [body, setBody] = useState('');
   const [posting, setPosting] = useState(false);
@@ -38,7 +40,12 @@ export default function CommentsSection({ initialComments, questionId, currentUs
       const res = await fetch('/api/comments', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ questionId, body: text }),
+        //body: JSON.stringify({ questionId, body: text }),
+        body: JSON.stringify({
+          body: text,
+          questionId,
+          answerId,
+        }),
       });
 
       const saved = await res.json();

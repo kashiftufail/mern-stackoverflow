@@ -52,23 +52,28 @@ export default async function QuestionDetail({ params }) {
 
   // ✅ Fetch answers with author info
   const answers = await Answer.find({ question: question._id })
-    .populate('author', 'fullName email avatar')
+    .populate("author", "fullName email avatar")
     .lean();
 
-  // after fetching answers
-  const answerIds = answers.map(ans => ans._id);
-  const answerComments = await Comment.find({ answer: { $in: answerIds } })
-    .populate('author', 'fullName email avatar')
+  // ✅ Get all answer IDs
+  const answerIds = answers.map((ans) => ans._id);
+
+  // ✅ Fetch comments for those answers
+  const answerCommentsRaw = await Comment.find({ answer: { $in: answerIds } })
+    .populate("author", "fullName email avatar")
     .sort({ createdAt: -1 })
     .lean();
 
-  // group comments by answerId
+  // ✅ Serialize them
+  const answerComments = answerCommentsRaw.map(serializeComment);
+
+  // ✅ Group by answerId
   const commentsByAnswer = {};
-  answerComments.forEach(c => {
-    const aid = c.answer.toString();
+  answerComments.forEach((c) => {
+    const aid = c.answer?.toString();
     if (!commentsByAnswer[aid]) commentsByAnswer[aid] = [];
     commentsByAnswer[aid].push(c);
-  });  
+  }); 
 
   const commentsRaw  = await Comment.find({ question: question._id })
     .populate('author', 'fullName email avatar')
@@ -81,7 +86,6 @@ export default async function QuestionDetail({ params }) {
 
   // ✅ Fetch all answer votes
   const answerVotesMap = {};
-  //const answerIds = answers.map(ans => ans._id);
   const allAnswerVotes = await Vote.find({ answer: { $in: answerIds } }).populate('user').lean();
    //console.log('Raw Votes answers:', allAnswerVotes);
   allAnswerVotes.forEach(vote => {
@@ -145,47 +149,59 @@ export default async function QuestionDetail({ params }) {
 
           <div className="mt-12 border-t pt-6">
             <h2 className="text-2xl font-semibold mb-6">{answers.length} Answers</h2>
-            {answers.map(answer => (
-              <div key={answer._id} className="flex items-start gap-4 mb-8">
-                <VoteButtons
-                  type="answer"
-                  slugOrId={answer._id.toString()}
-                  initialVotes={answerVotesMap[answer._id.toString()] || []}
-                  currentUserId={user._id.toString()}
-                />
-                <div className="flex-1">
-                  <p className="text-gray-800 whitespace-pre-line mb-2">{answer.body}</p>
-                  <div className="flex items-center justify-between text-sm text-gray-500">
-                    <div className="flex items-center gap-2">
-                      {answer.author?.avatar ? (
-                        <img src={answer.author.avatar} alt="avatar" className="w-6 h-6 rounded-full" />
-                      ) : (
-                        <div className="w-6 h-6 rounded-full bg-gray-300 flex items-center justify-center text-white text-sm font-bold">
-                          {answer.author?.fullName?.[0] || answer.author?.email?.[0] || "U"}
-                        </div>
-                      )}
-                      <span>{answer.author?.fullName || answer.author?.email}</span>
+              {answers.map(answer => (
+                <div key={answer._id} className="flex items-start gap-4 mb-8">
+                  {/* Left: Vote Buttons */}
+                  <VoteButtons
+                    type="answer"
+                    slugOrId={answer._id.toString()}
+                    initialVotes={answerVotesMap[answer._id.toString()] || []}
+                    currentUserId={user._id.toString()}
+                  />
+
+                  {/* Right: Answer + Comments */}
+                  <div className="flex-1">
+                    {/* Answer body */}
+                    <p className="text-gray-800 whitespace-pre-line mb-2">{answer.body}</p>
+
+                    {/* Author + Date */}
+                    <div className="flex items-center justify-between text-sm text-gray-500 mb-4">
+                      <div className="flex items-center gap-2">
+                        {answer.author?.avatar ? (
+                          <img
+                            src={answer.author.avatar}
+                            alt="avatar"
+                            className="w-6 h-6 rounded-full"
+                          />
+                        ) : (
+                          <div className="w-6 h-6 rounded-full bg-gray-300 flex items-center justify-center text-white text-sm font-bold">
+                            {answer.author?.fullName?.[0] || answer.author?.email?.[0] || "U"}
+                          </div>
+                        )}
+                        <span>{answer.author?.fullName || answer.author?.email}</span>
+                      </div>
+                      <span>{moment(answer.createdAt).fromNow()}</span>
                     </div>
-                    <span>{moment(answer.createdAt).fromNow()}</span>
+
+                    {/* ✅ Comments Section - full width */}
+                    <div className="w-full border-t pt-4 mt-4">
+                      <CommentsSection
+                        initialComments={commentsByAnswer[answer._id.toString()] || []}
+                        answerId={answer._id.toString()}
+                        currentUser={{
+                          _id: user._id.toString(),
+                          fullName: user.fullName || null,
+                          email: user.email,
+                          avatar: user.avatar || null,
+                        }}
+                      />
+                    </div>
                   </div>
                 </div>
-
-                
-
-
-
-              </div>
-
-              
-
-
-            ))}
+              ))}
           </div>
 
-
           <AnswerForm questionId={question._id.toString()} />
-
-
 
         </div>
       </div>
