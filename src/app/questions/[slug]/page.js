@@ -11,6 +11,8 @@ import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth';
 import Comment from '@/models/Comment';
 import CommentsSection from '@/components/CommentsSection';
+import { serializeComment } from "@/lib/serializers/comment";
+
 
 
 export const dynamic = 'force-dynamic';
@@ -53,14 +55,33 @@ export default async function QuestionDetail({ params }) {
     .populate('author', 'fullName email avatar')
     .lean();
 
-  const comments = await Comment.find({ question: question._id })
+  // after fetching answers
+  const answerIds = answers.map(ans => ans._id);
+  const answerComments = await Comment.find({ answer: { $in: answerIds } })
+    .populate('author', 'fullName email avatar')
+    .sort({ createdAt: -1 })
+    .lean();
+
+  // group comments by answerId
+  const commentsByAnswer = {};
+  answerComments.forEach(c => {
+    const aid = c.answer.toString();
+    if (!commentsByAnswer[aid]) commentsByAnswer[aid] = [];
+    commentsByAnswer[aid].push(c);
+  });  
+
+  const commentsRaw  = await Comment.find({ question: question._id })
     .populate('author', 'fullName email avatar')
     .sort({ createdAt: -1 })
     .lean();  
 
+  const comments = commentsRaw.map(serializeComment);
+
+  
+
   // ✅ Fetch all answer votes
   const answerVotesMap = {};
-  const answerIds = answers.map(ans => ans._id);
+  //const answerIds = answers.map(ans => ans._id);
   const allAnswerVotes = await Vote.find({ answer: { $in: answerIds } }).populate('user').lean();
    //console.log('Raw Votes answers:', allAnswerVotes);
   allAnswerVotes.forEach(vote => {
@@ -121,6 +142,7 @@ export default async function QuestionDetail({ params }) {
           />
 
 
+
           <div className="mt-12 border-t pt-6">
             <h2 className="text-2xl font-semibold mb-6">{answers.length} Answers</h2>
             {answers.map(answer => (
@@ -147,9 +169,20 @@ export default async function QuestionDetail({ params }) {
                     <span>{moment(answer.createdAt).fromNow()}</span>
                   </div>
                 </div>
+
+                
+
+
+
               </div>
+
+              
+
+
             ))}
           </div>
+
+
           <AnswerForm questionId={question._id.toString()} />
 
 
