@@ -9,6 +9,7 @@ const questionSchema = new mongoose.Schema({
   tags: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Tag' }],
   
   author: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
+  comments: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Comment' }],
 }, { timestamps: true });
 
 export default mongoose.models.Question || mongoose.model('Question', questionSchema);
